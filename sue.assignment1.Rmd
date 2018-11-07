@@ -1,0 +1,107 @@
+---
+title: "assessment"
+output: html_document
+---
+
+
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+```{r code}
+
+
+library(tidyverse)
+
+#class(LondonData)
+LondonData <- read_csv("https://files.datapress.com/london/dataset/ward-profiles-and-atlas/2015-09-24T14:21:24/ward-profiles-excel-version.csv", na = "n/a")
+datatypelist<-data.frame(cbind(lapply(LondonData,class)))
+
+
+
+LondonBoroughs<-LondonData[626:658,]
+LondonData<-data.frame(LondonData)
+#grep (get) me all of the rows from the London Data data frame where the text in column 3 starts with (^) E09
+LondonBoroughs<-LondonData[grep("^E09",LondonData[,3]),]
+#head(LondonBoroughs)
+
+LondonBoroughs<-LondonBoroughs[2:34,]
+LondonBoroughs<-LondonBoroughs[,c(1,19,20,21)]
+#rename the column 1 in LondonBoroughs
+names(LondonBoroughs)[1]<-c("Borough Name")
+
+
+
+#working with Spatial Data
+
+
+
+library(maptools)
+library(RColorBrewer)
+library(classInt)
+library(sp)
+library(rgeos)
+library(tmap)
+library(tmaptools)
+library(sf)
+library(rgdal)
+library(geojsonio)
+
+
+
+
+BoroughMapSF <- read_shape("D:/Sue/assignment/BoundaryData(wards)/england_lad_2011.shp", as.sf = TRUE)
+library(methods)
+#class(BoroughMapSF)
+#class(BoroughMapSP)
+#newSF <- st_as_sf(BoroughMapSP)
+#newSP <- as(newSF, "Spatial")
+#BoroughMapSP <- as(BoroughMapSF, "Spatial")
+
+
+BoroughDataMap <- append_data(BoroughMapSF,LondonData, key.shp = "code", key.data = "New.code", ignore.duplicates = TRUE)
+
+
+library(tmap)
+library(tmaptools)
+tmap_mode("plot")
+
+
+tm_shape(BoroughDataMap) + 
+  tm_polygons("Number.of.properties.sold...2014" , 
+              style="jenks",
+              palette="Reds",
+              midpoint=NA) + 
+  tm_compass(position = c("right", "top"),type = "arrow") + 
+  tm_scale_bar(position = c("left", "bottom")) +
+  tm_layout(title = "Number.of.properties.sold...2014", legend.position = c("right", "bottom"))
+```
+Geographic Information Systems and Science - Assessment Part 1
+
+Both Arcgis and R language are effective and powerful mapping software. I will give the review and comparation of making maps by these two tools.
+1.Review of making map
+I made an issue map of the car ownership volume in the inner London area by Arcmap. After downloading and cleaning the cencus data and boundary data on ¡®london data¡¯ official website, I imported the shapefile into the Arcmap, joining the csv file into the shapefile with code, and finally color the map in 7 classification of quantity of the car.
+In drawing a map using R, it needs to install packages (such as ¡®sp¡¯,¡¯ggplot¡¯ to make use of the function in making map. Then, used ¡®read.csv¡¯ and ¡®read.shape¡¯ function to import data, combined the map and cencus data by code command. Finally, gave code to add the compass, legend, title, base map, etc.
+2. Benefits &Drawback Analysis
+Each method has its benefits and drawback. Drawing a map with Arcmap is good for drawing a small number of maps that require complex, in-depth analysis. Arcmap is an operating system based on the Graphical User Interface (GUI), which means users can interact and issue commands with the system through actual operations by select graphical elements (such as icons, menus, windows, etc.). The advantage of GUI is that it is easy for user to give the command by select the command name, rather than memorizing the different command code. After each step of operation, the map changed and clearly reflected in the interface, by which user interacts with the system very conveniently.
+In contrast, using R to draw maps is suitable for a batch drawing. The convenience of codes change can improve the efficiency of map drawing. For instance, in the thesis map of London I have drawn in R studio, I could change the code to join the other thesis data and export the different map I need, as well as map related properties, such as map color, title, legend position and size. The operating system of the CLI command interface has great advantages for batch processing data and map production. In addition, I don¡¯t need to master the skill of knowing the positon of operational command in particular system (like Arcmap).
+In summary, making map by GUI has the benefits of flexibility, powerful graphics processing ability and high operation feasibility. However, it takes a long time to wait for its operation of  each step. When data and graphics are loaded too much, the Arcmap need to have a large memory to store them, causing slowing down of system. On the contrary, the command interface represented by CLI does not reduce its running speed although the increase of the amount of data added. Besides, as a command execution interface, it does not take up too much memory. However, the operation of CLI is difficult (need to learn the command code), which means a shortcoming in user¡¯s experience.
+3.Data sources used in their generation
+When creating a map using Arcmap, we need to manually clean up the data, adjust the parts which the system can not recognize, and generate graphics processing (points, lines, faces). In contrast, we can easily loading packages, like tidyverse package, to clean mass data,  tackling null values, spaces in the fields, etc. The R is more advanced and powerful to create maps after mastering the methods of use.
+
+
+
+Figure 1 
+![Caption for the picture.](D:/Sue/map_gis.jpg)
+
+Figure 2
+![Caption for the picture.](D:/Sue/assignment/map_R.png)
+
+
+
+
